@@ -31,11 +31,9 @@ class TimeReaper(ContextDecorator):
 
     def stop_process(self, *args, log=None):
         self.cancel_alarm()
-
-        callback_return = self.exit_callback()
+        self.exit_callback()
         if self.logger:
             self.logger(f"\n{log}\n")
-        return callback_return
 
     def set_alarm(self):
         self.alarm_thread = threading.Timer(

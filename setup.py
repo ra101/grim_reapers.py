@@ -4,4 +4,10 @@ setup(
     name="grim_reapers",
     packages=["grim_reapers"],
     license="GPL-2.0 license",
+    install_requires=[
+        "flask",
+    ],
+    extras_require={
+        "tunning": ["py-localtunnel"],
+    },
 )

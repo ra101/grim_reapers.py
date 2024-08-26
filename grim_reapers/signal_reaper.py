@@ -30,11 +30,9 @@ class SignalReaper(ContextDecorator):
 
     def stop_process(self, log=None):
         self.reset_signals()
-
-        callback_return = self.exit_callback()
+        self.exit_callback()
         if self.logger and log:
             self.logger(f"\n{log}\n")
-        return callback_return
 
     def set_signals(self):
 
