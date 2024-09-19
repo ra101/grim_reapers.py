@@ -1,5 +1,5 @@
 import sys
-import threading
+from threading import Timer
 from contextlib import ContextDecorator
 
 
@@ -16,7 +16,7 @@ class TimeReaper(ContextDecorator):
 
         self.stop_time = stop_time
         self.exit_callback = exit_callback
-        self.alarm_thread = None
+        self._alarm_thread = None
         self.logger = logger
 
     def __enter__(self, *args, **kwargs):
@@ -26,8 +26,8 @@ class TimeReaper(ContextDecorator):
         self.cancel_alarm()
 
     def cancel_alarm(self):
-        if self.alarm_thread.is_alive():
-            self.alarm_thread.cancel()
+        if self._alarm_thread.is_alive():
+            self._alarm_thread.cancel()
 
     def stop_process(self, *args, log=None):
         self.cancel_alarm()
@@ -36,8 +36,8 @@ class TimeReaper(ContextDecorator):
             self.logger(f"\n{log}\n")
 
     def set_alarm(self):
-        self.alarm_thread = threading.Timer(
+        self._alarm_thread = Timer(
             self.stop_time, self.stop_process,
             kwargs={"log": self.stop_log.format(time=self.stop_time)},
         )
-        self.alarm_thread.start()
+        self._alarm_thread.start()
