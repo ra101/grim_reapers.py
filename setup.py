@@ -7,7 +7,4 @@ setup(
     install_requires=[
         "flask",
     ],
-    extras_require={
-        "tunning": ["py-localtunnel"],
-    },
 )

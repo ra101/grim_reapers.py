@@ -31,8 +31,7 @@ def stop_driver_function():
 REAPER_MAP = {
     'signal': grim_reapers.SignalReaper(stop_driver_function),
     'time': grim_reapers.TimeReaper(stop_driver_function, stop_time=5),
-    'webhook': grim_reapers.WebhookReaper(
-        stop_driver_function, tunning=True),
+    'webhook': grim_reapers.WebhookReaper(stop_driver_function),
 }
 
 
