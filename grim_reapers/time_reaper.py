@@ -16,7 +16,6 @@ class TimeReaper(ContextDecorator):
 
         self.stop_time = stop_time
         self.exit_callback = exit_callback
-        self._alarm_thread = None
         self.logger = logger
 
     def __enter__(self, *args, **kwargs):
