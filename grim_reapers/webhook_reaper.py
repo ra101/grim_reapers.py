@@ -9,12 +9,9 @@ from werkzeug.serving import make_server
 
 class WebhookReaper(ContextDecorator):
 
-    stop_log = (
-        "Process stopped after receiving request from `{addr}` address."
-    )
 
     def __init__(
-        self, exit_callback, port=5342,
+        self, exit_callback, port=8342,
         logger=sys.stdout.write,
     ):
         self.exit_callback = exit_callback
@@ -24,14 +21,21 @@ class WebhookReaper(ContextDecorator):
 
         self.init_flask()
 
+    @property
+    def stop_log(self):
+        return  (
+            "Process stopped after receiving request "
+            f"from `{self.request_addr}` address."
+        )
+
     def init_flask(self):
         self._app = Flask(__name__)
         self._app.add_url_rule(
             "/", endpoint=self.exit_callback.__name__,
             view_func=lambda: self._stop_process_endpoint(
-                log=self.stop_log.format(addr=request.remote_addr)
-            ),
-        )
+                request_addr=request.remote_addr
+            )
+        ),
         self._server = make_server(self.host, self.port, self._app)
         self._app_ctx = self._app.app_context()
         self._app_ctx.push()
@@ -59,16 +63,17 @@ class WebhookReaper(ContextDecorator):
         self._server.shutdown()
         self._app_thread.join()
 
-    def _stop_process_endpoint(self, log=None):
+    def _stop_process_endpoint(self, request_addr):
+        self.request_addr = request_addr
         self._stop_thread = Thread(
-            target=self.stop_process, args=(log, )
+            target=self.stop_process
         )
         self._stop_thread.start()
-        return {'message': log}
+        return {'message': self.stop_log}
 
-    def stop_process(self, log=None):
+    def stop_process(self):
         self.stop_app()
 
         self.exit_callback()
         if self.logger:
-            self.logger(f"\n{log}\n")
+            self.logger(f"\n{self.stop_log}\n")

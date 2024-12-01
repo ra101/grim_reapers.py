@@ -6,8 +6,6 @@ from contextlib import ContextDecorator
 
 class SignalReaper(ContextDecorator):
 
-    stop_log = "Process stopped by `{sig_name}` signal."
-
     def __init__(
         self, exit_callback,
         sig_enums=(signal.SIGINT, signal.SIGTERM),
@@ -22,17 +20,22 @@ class SignalReaper(ContextDecorator):
             for sig_enum in sig_enums
         }
 
+    @property
+    def stop_log(self):
+        return f"Process stopped by `{self.stopping_sig}` signal."
+
     def __enter__(self, *args, **kwargs):
         self.set_signals()
 
     def __exit__(self, *args, **kwargs):
         self.reset_signals()
 
-    def stop_process(self, log=None):
+    def stop_process(self, sig_name):
+        self.stopping_sig = sig_name
         self.reset_signals()
         self.exit_callback()
-        if self.logger and log:
-            self.logger(f"\n{log}\n")
+        if self.logger:
+            self.logger(f"\n{self.stop_log}\n")
 
     def set_signals(self):
 
@@ -40,9 +43,9 @@ class SignalReaper(ContextDecorator):
             self.logger(f"\nPID of this process: `{os.getpid()}`\n")
 
         for sig_enum in self.sig_ohandler_map:
-            signal.signal(sig_enum, lambda *_: self.stop_process(
-                log=self.stop_log.format(sig_name=sig_enum.name),
-            ))
+            signal.signal(
+                sig_enum, lambda *_: self.stop_process(sig_name=sig_enum.name)
+            )
 
     def reset_signals(self):
         for sig_enum, original_handler in self.sig_ohandler_map.items():
