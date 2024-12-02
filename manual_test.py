@@ -1,5 +1,6 @@
 import sys
 import time
+import random
 import argparse
 from contextlib import ExitStack
 
@@ -8,7 +9,7 @@ import grim_reapers
 
 
 DRIVER_RUN = True
-
+BEAT_COUNT = 0
 
 def driver_function():
     spinner = [">    <", " >  < ", "  ><  ", "  <>  ", " <  > ", "<    >" ]
@@ -27,11 +28,22 @@ def stop_driver_function():
     global DRIVER_RUN
     DRIVER_RUN = False
 
+def pacemaker():
+    global BEAT_COUNT
+    BEAT_COUNT += 1
+
+    if BEAT_COUNT > 2:
+        if random.choice([0, 1]):
+            return False
+        raise StopIteration('No more heartbeat.')
+
+    return True
 
 REAPER_MAP = {
     'signal': grim_reapers.SignalReaper(stop_driver_function),
     'time': grim_reapers.TimeReaper(stop_driver_function, stop_time=5),
     'webhook': grim_reapers.WebhookReaper(stop_driver_function),
+    'beat': grim_reapers.BeatReaper(stop_driver_function, pacemaker),
 }
 
 
